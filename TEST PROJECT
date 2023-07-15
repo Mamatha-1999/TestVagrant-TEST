@@ -1,0 +1,102 @@
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
+
+class SongNode {
+    String song;
+    String user;
+
+    public SongNode(String song, String user) {
+        this.song = song;
+        this.user = user;
+    }
+}
+
+class RecentlyPlayedStore {
+    private int capacity;
+    private Map<String, SongNode> store;
+    private LinkedList<SongNode> recentlyPlayed;
+
+    public RecentlyPlayedStore(int capacity) {
+        this.capacity = capacity;
+        this.store = new HashMap<>();
+        this.recentlyPlayed = new LinkedList<>();
+    }
+
+    public void addPlayedSong(String song, String user) {
+        if (store.containsKey(song)) {
+            SongNode node = store.get(song);
+            node.user = user;
+            recentlyPlayed.remove(node);
+            recentlyPlayed.addFirst(node);
+        } else {
+            SongNode newNode = new SongNode(song, user);
+            store.put(song, newNode);
+            recentlyPlayed.addFirst(newNode);
+            if (recentlyPlayed.size() > capacity) {
+                SongNode removedNode = recentlyPlayed.removeLast();
+                store.remove(removedNode.song);
+            }
+        }
+    }
+
+    public void getRecentlyPlayedSongs(String user) {
+        for (SongNode node : recentlyPlayed) {
+            if (node.user.equals(user)) {
+                System.out.println(node.song);
+            }
+        }
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        // Scenario 1
+        RecentlyPlayedStore store1 = new RecentlyPlayedStore(3);
+
+        // Initial playlist: S1, S2, S3
+        store1.addPlayedSong("S1", "User1");
+        store1.addPlayedSong("S2", "User1");
+        store1.addPlayedSong("S3", "User1");
+
+        store1.addPlayedSong("S4", "User1");  // S2, S3, S4
+        store1.addPlayedSong("S2", "User1");  // S3, S4, S2
+        store1.addPlayedSong("S1", "User1");  // S4, S2, S1
+
+        System.out.println("Scenario 1 - Recently Played Songs for User1:");
+        store1.getRecentlyPlayedSongs("User1");  // Output: S4, S2, S1
+
+        System.out.println();
+
+        // Scenario 2
+        RecentlyPlayedStore store2 = new RecentlyPlayedStore(3);
+
+        // Initial playlist: S1, S2, S3
+        store2.addPlayedSong("S1", "User1");
+        store2.addPlayedSong("S2", "User1");
+        store2.addPlayedSong("S3", "User1");
+
+        store2.addPlayedSong("S4", "User1");  // S2, S3, S4
+        store2.addPlayedSong("S2", "User1");  // S3, S4, S2
+        store2.addPlayedSong("S1", "User1");  // S4, S2, S1
+
+        System.out.println("Scenario 2 - Recently Played Songs for User1:");
+        store2.getRecentlyPlayedSongs("User1");  // Output: S4, S2, S1
+
+        System.out.println();
+
+        // Scenario 3
+        RecentlyPlayedStore store3 = new RecentlyPlayedStore(2);
+
+        // Initial playlist: S1, S2
+        store3.addPlayedSong("S1", "User1");
+        store3.addPlayedSong("S2", "User1");
+
+        store3.addPlayedSong("S3", "User1");  // S2, S3
+        store3.addPlayedSong("S4", "User1");  // S3, S4
+        store3.addPlayedSong("S2", "User1");  // S4, S2
+
+        System.out.println("Scenario 3 - Recently Played Songs for User1:");
+        store3.getRecentlyPlayedSongs("User1");  // Output: S4, S2
+    }
+}
