@@ -1,102 +1,102 @@
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
-
-class SongNode {
-    String song;
-    String user;
-
-    public SongNode(String song, String user) {
-        this.song = song;
-        this.user = user;
-    }
-}
-
 class RecentlyPlayedStore {
-    private int capacity;
-    private Map<String, SongNode> store;
-    private LinkedList<SongNode> recentlyPlayed;
+  constructor(capacity) {
+    this.capacity = capacity;
+    this.store = new Map();
+  }
 
-    public RecentlyPlayedStore(int capacity) {
-        this.capacity = capacity;
-        this.store = new HashMap<>();
-        this.recentlyPlayed = new LinkedList<>();
+  addSong(user, song) {
+    if (!this.store.has(user)) {
+      this.store.set(user, []);
     }
 
-    public void addPlayedSong(String song, String user) {
-        if (store.containsKey(song)) {
-            SongNode node = store.get(song);
-            node.user = user;
-            recentlyPlayed.remove(node);
-            recentlyPlayed.addFirst(node);
-        } else {
-            SongNode newNode = new SongNode(song, user);
-            store.put(song, newNode);
-            recentlyPlayed.addFirst(newNode);
-            if (recentlyPlayed.size() > capacity) {
-                SongNode removedNode = recentlyPlayed.removeLast();
-                store.remove(removedNode.song);
-            }
-        }
+    const playlist = this.store.get(user);
+
+    if (playlist.includes(song)) {
+      const index = playlist.indexOf(song);
+      playlist.splice(index, 1);
+    } else if (playlist.length >= this.capacity) {
+      playlist.shift();
     }
 
-    public void getRecentlyPlayedSongs(String user) {
-        for (SongNode node : recentlyPlayed) {
-            if (node.user.equals(user)) {
-                System.out.println(node.song);
-            }
-        }
+    playlist.push(song);
+  }
+
+  getRecentlyPlayedSongs(user) {
+    if (this.store.has(user)) {
+      return this.store.get(user);
     }
+
+    return [];
+  }
 }
 
-public class Main {
-    public static void main(String[] args) {
-        // Scenario 1
-        RecentlyPlayedStore store1 = new RecentlyPlayedStore(3);
+module.exports = RecentlyPlayedStore;
+RecentlyPlayedStore.test.js:
+javascript
+Copy code
+const RecentlyPlayedStore = require("../src/RecentlyPlayedStore");
 
-        // Initial playlist: S1, S2, S3
-        store1.addPlayedSong("S1", "User1");
-        store1.addPlayedSong("S2", "User1");
-        store1.addPlayedSong("S3", "User1");
+describe("RecentlyPlayedStore", () => {
+  let store;
 
-        store1.addPlayedSong("S4", "User1");  // S2, S3, S4
-        store1.addPlayedSong("S2", "User1");  // S3, S4, S2
-        store1.addPlayedSong("S1", "User1");  // S4, S2, S1
+  beforeEach(() => {
+    store = new RecentlyPlayedStore(3);
+  });
 
-        System.out.println("Scenario 1 - Recently Played Songs for User1:");
-        store1.getRecentlyPlayedSongs("User1");  // Output: S4, S2, S1
+  it("should return recently played songs for a user", () => {
+    store.addSong("User1", "S1");
+    store.addSong("User1", "S2");
+    store.addSong("User1", "S3");
+    expect(store.getRecentlyPlayedSongs("User1")).toEqual(["S1", "S2", "S3"]);
 
-        System.out.println();
+    store.addSong("User1", "S4");
+    expect(store.getRecentlyPlayedSongs("User1")).toEqual(["S2", "S3", "S4"]);
 
-        // Scenario 2
-        RecentlyPlayedStore store2 = new RecentlyPlayedStore(3);
+    store.addSong("User1", "S2");
+    expect(store.getRecentlyPlayedSongs("User1")).toEqual(["S3", "S4", "S2"]);
 
-        // Initial playlist: S1, S2, S3
-        store2.addPlayedSong("S1", "User1");
-        store2.addPlayedSong("S2", "User1");
-        store2.addPlayedSong("S3", "User1");
+    store.addSong("User1", "S1");
+    expect(store.getRecentlyPlayedSongs("User1")).toEqual(["S4", "S2", "S1"]);
+  });
 
-        store2.addPlayedSong("S4", "User1");  // S2, S3, S4
-        store2.addPlayedSong("S2", "User1");  // S3, S4, S2
-        store2.addPlayedSong("S1", "User1");  // S4, S2, S1
+  it("should return an empty array for a user with no recently played songs", () => {
+    expect(store.getRecentlyPlayedSongs("User2")).toEqual([]);
+  });
+});
 
-        System.out.println("Scenario 2 - Recently Played Songs for User1:");
-        store2.getRecentlyPlayedSongs("User1");  // Output: S4, S2, S1
+const RecentlyPlayedStore = require("../src/RecentlyPlayedStore");
 
-        System.out.println();
+describe("RecentlyPlayedStore", () => {
+  let store;
 
-        // Scenario 3
-        RecentlyPlayedStore store3 = new RecentlyPlayedStore(2);
+  beforeEach(() => {
+    store = new RecentlyPlayedStore(3);
+  });
 
-        // Initial playlist: S1, S2
-        store3.addPlayedSong("S1", "User1");
-        store3.addPlayedSong("S2", "User1");
+  it("should return recently played songs for a user", () => {
+    store.addSong("User1", "S1");
+    store.addSong("User1", "S2");
+    store.addSong("User1", "S3");
+    expect(store.getRecentlyPlayedSongs("User1")).toEqual(["S1", "S2", "S3"]);
 
-        store3.addPlayedSong("S3", "User1");  // S2, S3
-        store3.addPlayedSong("S4", "User1");  // S3, S4
-        store3.addPlayedSong("S2", "User1");  // S4, S2
+    store.addSong("User1", "S4");
+    expect(store.getRecentlyPlayedSongs("User1")).toEqual(["S2", "S3", "S4"]);
 
-        System.out.println("Scenario 3 - Recently Played Songs for User1:");
-        store3.getRecentlyPlayedSongs("User1");  // Output: S4, S2
-    }
-}
+    store.addSong("User1", "S2");
+    expect(store.getRecentlyPlayedSongs("User1")).toEqual(["S3", "S4", "S2"]);
+
+    store.addSong("User1", "S1");
+    expect(store.getRecentlyPlayedSongs("User1")).toEqual(["S4", "S2", "S1"]);
+  });
+
+  it("should return an empty array for a user with no recently played songs", () => {
+    expect(store.getRecentlyPlayedSongs("User2")).toEqual([]);
+  });
+});
+
+
+
+
+
+
+
